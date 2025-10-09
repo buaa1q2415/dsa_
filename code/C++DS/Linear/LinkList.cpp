@@ -48,7 +48,7 @@ public:
     int SearchValue(Elemtype value);
     optional<Elemtype> SearchIndex(int index);
     void Reverse();
-    friend Link<Elemtype>* Merge(Link<Elemtype>* list1,Link<Elemtype>* list2,int (*cmp)(Elemtype,Elemtype));
+    friend Link<Elemtype> Merge(Link<Elemtype>& list1,Link<Elemtype>& list2,int (*cmp)(Elemtype,Elemtype));
 
     Link& operator=(const Link<Elemtype>& other);
     Link& operator=(Link<Elemtype>&& other) noexcept;
