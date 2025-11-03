@@ -2,13 +2,6 @@
 #include <vector>
 using namespace std;
 
-template <typename Elemtype>
-void swap(Elemtype &a, Elemtype &b){
-    Elemtype temp=a;
-    a=b;
-    b=temp;
-}
-
 //选择排序：每次从[i,right]中选择一个最小的元素，放到i位置，然后在[i+1,right]继续
 //时间复杂度：O(n^2)
 //空间复杂度：O(1)
