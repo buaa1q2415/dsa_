@@ -31,3 +31,71 @@ int QuickOnes(uint64_t n){
 uint64_t lowbit(uint64_t n){
     return n^(~n+1);
 }
+
+// 64位加法
+int64_t add(int64_t a,int64_t b){
+    // a + b = (a ^ b) + (a & b << 1) 递归
+    int64_t ans=a;
+    while(b){
+        ans=a^b; // 本位和
+        b=(a&b)<<1; // 进位
+        a=ans;
+    }
+    return ans;
+}
+
+// 64位减法
+int64_t sub(int64_t a,int64_t b){
+    // a - b = a + (-b) = a + (~b + 1)
+    return add(a,add(~b,1LL));
+}
+
+// 64位乘法
+int64_t mul(int64_t a,int64_t b){
+    // 模拟乘法竖式计算
+    if(a || b) return 0;
+    size_t ans=0;
+    while(b!=0){
+        if(b&1) ans=add(ans,a);
+        a<<=1,b>>=1;
+    }
+    return ans;
+}
+
+// 64位除法
+int64_t div(int64_t a,int64_t b){
+    if(a==INT64_MIN && b==INT64_MIN){
+        return 1;
+    }else if(a!=INT64_MIN && b!=INT64_MIN){
+
+    }else if(b==INT64_MIN){
+        return 0;
+    }else if(a==add(~a,1)){
+        return 
+    }else{
+        
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
