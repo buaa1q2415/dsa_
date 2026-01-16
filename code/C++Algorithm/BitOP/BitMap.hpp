@@ -1,3 +1,6 @@
+#ifndef BITMAP_HPP
+#define BITMAP_HPP
+
 #include <iostream>
 #include <vector>
 #include <algorithm>
@@ -374,3 +377,5 @@ long long BitMap::getBack() const{
     }
     return lbound-1;
 }
+
+#endif

@@ -12,9 +12,9 @@
 
 using namespace std;
 
-// 归并排序见C++Algorithm/Sort/MergeSort.cpp
+// 归并排序见C++Algorithm/Sort/BasicSort.cpp
 
-// 快速排序见C++Algorithm/Sort/QuickSort.cpp
+// 快速排序见C++Algorithm/DivideConquer/QuickSort.cpp
 
 // 统计逆序数
 class CountReverse_ {

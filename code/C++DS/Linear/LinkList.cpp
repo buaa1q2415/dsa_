@@ -1,307 +1,265 @@
 #include <iostream>
-#include <string>
-#include <cmath>
-#include <cstdlib>
-#include <vector>
 #include <algorithm>
 #include <iterator>
-#include <cstddef>
-#include <optional>
 
-using namespace std;
+template <typename T> class LinkList;
 
-template <typename Elemtype>
+template <typename T>
 class Node{
-    friend class Link<Elemtype>;
+    friend class LinkList<T>;
 private:
-	Elemtype data;
-	struct Node* next;
+	T data;
+	Node* next;
 public:
-    Node():next(nullptr){};
-    Node(Elemtype data):data(data),next(nullptr){};
+    Node():next(nullptr){}
+    Node(T data):data(data),next(nullptr){}
     ~Node()=default;
-    void SetData(Elemtype data);
-    Elemtype GetData();
-    void SetNext(Node<Elemtype>* next);
-    Node<Elemtype>* GetNext();
+    Node(const Node<T>& other):data(other.data),next(nullptr){}
+    Node(Node<T>&& other) noexcept : data(std::move(other.data)), next(other.next) {
+        other.next = nullptr;
+    }
+    Node<T>& operator=(const Node<T>& other){
+        if(this==&other) return *this;
+        data=other.data;
+        return *this;
+    }
+    Node<T>& operator=(Node<T>&& other) noexcept{
+        if(this==&other) return *this;
+        data=std::move(other.data);
+        next=other.next;
+        other.next=nullptr;
+        return *this;
+    }
+
+
+    void setData(const T& data) {this->data=data;}
+    const T& getData() const {return data;}
+    void setNext(Node<T>* next) {this->next=next;}
+    Node<T>* getNext() const {return next;}
 };
 
-template <typename Elemtype>
-class Link{//带头尾结点，长度，当前结点的链表结构体定义(优化)
+template <typename T>
+class LinkList{
 private:
-    Node<Elemtype>* head,*tail;
-	int len=0;
+    Node<T>* front,*tail;
+	size_t len=0;
+
+    void init() {
+        front = new Node<T>();
+        tail = front;
+        len = 0;
+    }
 public:
-    Link();
-    Link(const Link<Elemtype>& other);
-    Link(Link<Elemtype>&& other) noexcept;
-    ~Link();
-
-    int Len();
-    void Show();
-    Node<Elemtype>* GetHead();
-    Node<Elemtype>* GetTail();
-    void Insert(Elemtype value,int index=-1);//默认尾插
-    void DelIndex(int index=-1);//默认删末尾
-    void DelValue(Elemtype value);
-    void Modify(Elemtype value,int index);
-    int SearchValue(Elemtype value);
-    optional<Elemtype> SearchIndex(int index);
-    void Reverse();
-    friend Link<Elemtype> Merge(Link<Elemtype>& list1,Link<Elemtype>& list2,int (*cmp)(Elemtype,Elemtype));
-
-    Link& operator=(const Link<Elemtype>& other);
-    Link& operator=(Link<Elemtype>&& other) noexcept;
-};
-
-template <typename Elemtype>
-void Node<Elemtype>::SetData(Elemtype data){
-    this->data=data;
-}
-
-template <typename Elemtype>
-Elemtype Node<Elemtype>::GetData(){
-    return this->data;
-}
-
-template <typename Elemtype>
-void Node<Elemtype>::SetNext(Node<Elemtype>* next){
-    this->next=next;
-}
-
-template <typename Elemtype>
-Node<Elemtype>* Node<Elemtype>::GetNext(){
-    return next;
-}
-
-template <typename Elemtype>
-Link<Elemtype>::Link(){
-    head = new Node<Elemtype>();  //定义一个空结点(不存储任何数据),链表初始化时直接创建
-	tail = head;
-    len=0;
-}
-
-template <typename Elemtype>
-Link<Elemtype>::Link(const Link<Elemtype>& other){
-    head=new Node<Elemtype>();
-    tail=head;
-    len=0;
-    Node<Elemtype>* p=other.head->next;
-    while(p){
-        Insert(p->data);
-        p=p->next;
+    LinkList(){
+        init();
     }
-}
 
-
-template <typename Elemtype>
-Link<Elemtype>::Link(Link<Elemtype>&& other) noexcept{
-    head=other.head;
-    tail=other.tail;
-    len=other.len;
-    other.head=nullptr;
-    other.tail=nullptr;
-    other.len=0;
-}
-
-template <typename Elemtype>
-int Link<Elemtype>::Len(){
-    return len;
-}
-
-template <typename Elemtype>
-Link<Elemtype>::~Link(){
-    Node<Elemtype>* p = head;
-    while(p != nullptr){
-        head = head->next;
-        delete p;
-        p = head;
+    LinkList(const LinkList<T>& other){
+        front=new Node<T>();
+        tail=front;
+        len=other.len;
+        Node<T>* p=other.front->next;
+        while(p){
+            tail->next = new Node<T>(p->data);
+            tail=tail->next;
+            p=p->next;
+        }
     }
-}
 
-template <typename Elemtype>
-void Link<Elemtype>::Show(){
-    Node<Elemtype>* p = head->next;
-    while(p != nullptr){
-        cout<<p->data<<" ";
-        p = p->next;
+    LinkList(LinkList<T>&& other) noexcept{
+        front=other.front;
+        tail=other.tail;
+        len=other.len;
+        other.front=nullptr;
+        other.tail=nullptr;
+        other.len=0;
     }
-}
+    
+    ~LinkList(){
+        clear();
+        delete front;
+        front=nullptr;
+        tail=nullptr;
+    }
 
-template <typename Elemtype>
-Node<Elemtype>* Link<Elemtype>::GetHead(){
-    return head;
-}
+    void clear() {
+        if (!front) return;
+        Node<T>* p = front->next;
+        while(p != nullptr){
+            Node<T>* temp = p;
+            p = p->next;
+            delete temp;
+        }
+        front->next = nullptr;
+        tail = front;
+        len = 0;
+    }
 
-template <typename Elemtype>
-Node<Elemtype>* Link<Elemtype>::GetTail(){
-    return tail;
-}
+    size_t getSize() const {return len;}
+    
+    Node<T>* getHead() const {return front;}
 
-template <typename Elemtype>
-void Link<Elemtype>::Insert(Elemtype value,int index){
-    if(index==-1){
-        Node<Elemtype>* node=new Node<Elemtype>(value);
-        tail->next=node;
-        tail=node;
+    Node<T>* getTail() const {return tail;}
+    
+    void reverse(){
+        Node<T>* p=front->next;
+        Node<T>* q=nullptr,*r=nullptr;
+        if(!p) return;
+        tail=p;
+        while(p){
+            r=p->next;
+            p->next=q;
+            q=p;
+            p=r;
+        }
+        front->next=q;
+    }
+
+    void push_front(const T& data){
+        if (!front) init();
+        Node<T>* newnode=new Node<T>(data);
+        newnode->next=front->next;
+        front->next=newnode;
+        if(tail==front) tail=newnode;
         len++;
-        return;
     }
-    if(index<0||index>len){
-        cout<<"index error"<<endl;
-        return;
-    }
-    Node<Elemtype>* p=head;
-    for(int i=0;i<index&&p;i++){
-        p=p->next;
-    }
-    Node<Elemtype>* q=p->next;
-    Node<Elemtype>* node=new Node<Elemtype>(value);
-    p->next=node;
-    node->next=q;
-    len++;
-}
 
-template <typename Elemtype>
-void Link<Elemtype>::DelIndex(int index){
-    if(index==-1) index=len-1;
-    if(len==0){
-        cout<<"empty link"<<endl;
-        return;
+    void push_back(const T& data){
+        if (!front) init();
+        Node<T>* newnode=new Node<T>(data);
+        tail->next=newnode;
+        tail=newnode;
+        len++;
     }
-    if(index<0||index>=len){
-        cout<<"index error"<<endl;
-        return;
-    }
-    Node<Elemtype>* p=head;
-    for(int i=0;i<index&&p;i++){
-        p=p->next;
-    }
-    Node<Elemtype>* q=p->next;
-    p->next=q->next;
-    if(index==len-1) tail=p;
-    delete q;
-    len--;
-}
 
-template <typename Elemtype>
-void Link<Elemtype>::DelValue(Elemtype value){
-    Node<Elemtype>* p=head;
-    while(p->next){
-        if(p->next->data==value){
-            Node<Elemtype>* q=p->next;
-            p->next=q->next;
-            if(q==tail) tail=p;
-            delete q;
-            len--;
+    void pop_front(){
+        if(!front || front->next==nullptr) return;
+        Node<T>* p=front->next;
+        front->next=p->next;
+        delete p;
+        len--;
+        if(len==0) tail=front;
+    }
+
+    void pop_back(){
+        if(!front ||front->next==nullptr) return;
+        Node<T>* p=front;
+        while(p->next!=tail){
+            p=p->next;
         }
-        else p=p->next;
+        delete tail;
+        tail=p;
+        tail->next=nullptr;
+        len--;
+        if(len==0) tail=front;
     }
-}
 
-template <typename Elemtype>
-void Link<Elemtype>::Modify(Elemtype value,int index){
-    if(index<0||index>=len){
-        cout<<"index error"<<endl;
-        return;
-    }
-    Node<Elemtype>* p=head;
-    for(int i=0;i<=index&&p;i++){
-        p=p->next;
-    }
-    p->data=value;
-}
-
-template <typename Elemtype>
-int Link<Elemtype>::SearchValue(Elemtype value){
-    Node<Elemtype>* p=head;
-    int i=0;
-    while(p->next){
-        p=p->next;
-        if(p->data==value){
-            return i;
+    LinkList& operator=(const LinkList<T>& other){
+        if(this==&other) return *this;
+        clear();
+        Node<T>* p = other.front ? other.front->next : nullptr;
+        while(p){
+            push_back(p->data);
+            p=p->next;
         }
-        i++;
+        return *this;
     }
-    return -1;
-}
 
-template <typename Elemtype>
-optional<Elemtype> Link<Elemtype>::SearchIndex(int index){
-    if(index<0||index>=len){
-        return nullopt;
+    LinkList& operator=(LinkList<T>&& other) noexcept{
+        if(this==&other) return *this;
+        clear();
+        delete front;
+
+        front=other.front;
+        tail=other.tail;
+        len=other.len;
+
+        other.front=nullptr;
+        other.tail=nullptr;
+        other.len=0;
+
+        return *this;
     }
-    if(index==len-1) return tail->data;
-    Node<Elemtype>* p=head;
-    for(int i=0;i<=index&&p;i++){
-        p=p->next;
+
+
+    class iterator {
+    private:
+        Node<T>* curr;
+    public:
+        using iterator_category = std::forward_iterator_tag;
+        using value_type = T;
+        using difference_type = std::ptrdiff_t;
+        using pointer = T*;
+        using reference = T&;
+
+        iterator(Node<T>* ptr = nullptr) : curr(ptr) {}
+
+        reference operator*() const { return curr->data; }
+        pointer operator->() const { return &(curr->data); }
+
+        iterator& operator++() { // 前置 ++
+            if(curr) curr = curr->next;
+            return *this;
+        }
+
+        iterator operator++(int) { // 后置 ++
+            iterator temp = *this;
+            if(curr) curr = curr->next;
+            return temp;
+        }
+
+        bool operator==(const iterator& other) const { return curr == other.curr; }
+        bool operator!=(const iterator& other) const { return curr != other.curr; }
+    };
+
+    // begin 指向 dummy head 的下一个节点
+    iterator begin() { return iterator(front ? front->next : nullptr); }
+    iterator end() { return iterator(nullptr); }
+
+    const_iterator begin() const { return const_iterator(front ? front->next : nullptr); }
+    const_iterator end() const { return const_iterator(nullptr); }
+
+    // 返回指向 Dummy Head 的迭代器
+    iterator before_begin() { 
+        return iterator(front); 
     }
-    return p->data;
-}
 
-template <typename Elemtype>
-void Link<Elemtype>::Reverse(){
-    Node<Elemtype>* p=head->next;
-    Node<Elemtype>* q=nullptr,*r=nullptr;
-    if(!p) return;
-    tail=p;
-    while(p){
-        r=p->next;
-        p->next=q;
-        q=p;
-        p=r;
+    // 在 pos 之后插入 value
+    iterator insert_after(iterator pos, const T& value) {
+        Node<T>* current = pos.curr;
+        if (!current) return end(); // 无效迭代器
+
+        Node<T>* newNode = new Node<T>(value);
+        newNode->next = current->next;
+        current->next = newNode;
+
+        // 如果是在最后一个节点后插入，更新 tail
+        if (current == tail) {
+            tail = newNode;
+        }
+        
+        len++;
+        return iterator(newNode);
     }
-    head->next=q;
-}
 
-template <typename Elemtype>
-Link<Elemtype> Merge(Link<Elemtype>& list1,Link<Elemtype>& list2,int (*cmp)(Elemtype,Elemtype)){
-	Link<Elemtype> link;
-	Node<Elemtype>* p=list1.head->GetNext();
-	Node<Elemtype>* q=list2.head->GetNext();
-	while(p&&q){
-		if(cmp(p->GetData(),q->GetData())<=0){
-			link.Insert(p->GetData());
-			p=p->GetNext();
-		}else{
-			link.Insert(q->GetData());
-			q=q->GetNext();
-		}
-	}
-	while(p){
-		link.Insert(p->GetData());
-		p=p->GetNext();
-	}
-	while(q){
-		link.Insert(q->GetData());
-		q=q->GetNext();
-	}
-	return link;
-}
+    // 删除 pos 之后的那个节点
+    iterator erase_after(iterator pos) {
+        Node<T>* current = pos.curr;
+        // 如果 pos 本身无效，或者 pos 已经是最后一个节点(后面没东西删)，直接返回
+        if (!current || !current->next) return end();
 
-template <typename Elemtype>
-Link<Elemtype>& Link<Elemtype>::operator=(const Link<Elemtype>& other){
-    if(this==&other) return *this;
-    clear();
-    head=new Node<Elemtype>();
-    tail=head;
-    len=0;
-    Node<Elemtype>* p=other.head->next;
-    while(p){
-        Insert(p->data);
-        p=p->next;
+        Node<T>* nodeToDelete = current->next;
+        current->next = nodeToDelete->next;
+
+        // 如果删除的是 tail，tail 指针前移
+        if (nodeToDelete == tail) {
+            tail = current;
+        }
+
+        delete nodeToDelete; // Node 析构不删 next，安全
+        len--;
+        
+        // 返回被删除节点原来的下一个节点
+        return iterator(current->next);
     }
-    return *this;
-}
-
-template <typename Elemtype>
-Link<Elemtype>& Link<Elemtype>::operator=(Link<Elemtype>&& other) noexcept{
-    if(this==&other) return *this;
-    head=other.head;
-    tail=other.tail;
-    len=other.len;
-    other.head=nullptr;
-    other.tail=nullptr;
-    other.len=0;
-    return *this;
-}
+};

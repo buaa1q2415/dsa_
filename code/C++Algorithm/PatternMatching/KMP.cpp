@@ -4,7 +4,7 @@
 
 class KMP{
 private:
-    void getNext(std::string& pattern, std::vector<int>& next) {
+    static void getNext(const std::string& pattern, std::vector<int>& next) {
         int m=pattern.size();
         next[0]=-1;
         int i=0,j=-1;
@@ -18,7 +18,7 @@ private:
         }
     }
 public:
-    int Match(std::string& text, std::string& pattern) {
+    static int Match(const std::string& text, const std::string& pattern) {
         int n=text.size(), m=pattern.size();
         if (n<m || m==0) return -1;
         std::vector<int> next(m,-1);
@@ -34,7 +34,7 @@ public:
         return (j==m)? i-j : -1;
     }
 
-    std::vector<int> MatchAll(std::string& text, std::string& pattern) {
+    std::vector<int> MatchAll(const std::string& text, const std::string& pattern) {
         std::vector<int> res;
         int n=text.size(), m=pattern.size();
         if (m==0) return {}; // 处理空模式字符串

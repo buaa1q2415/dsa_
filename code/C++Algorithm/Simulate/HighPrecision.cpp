@@ -38,6 +38,10 @@ public:
     LargeNumber(const LargeNumber& other);
     LargeNumber(LargeNumber&& other) noexcept;
 
+    explicit operator bool() const {
+        return *this!=0;
+    }
+
 friend ostream& operator<<(ostream& os,const LargeNumber& n);
 friend istream& operator>>(istream& is,LargeNumber& n);
 friend LargeNumber abs(const LargeNumber& n);
@@ -198,6 +202,7 @@ LargeNumber LargeNumber::operator+(const LargeNumber& n) const{
         ans=AbsSubHelper(*this,n);
         ans.symbol=(cmp==-1)? n.symbol:symbol;
     }
+    return ans;
 }
 
 LargeNumber LargeNumber::operator-(const LargeNumber& n) const{
@@ -305,6 +310,7 @@ LargeNumber LargeNumber::operator*(const LargeNumber& n) const{
     }
     ans = AbsMulHelper(*this, n);
     ans.symbol = (symbol == n.symbol);
+    return ans;
 }
 
 ostream& operator<<(ostream& os,const LargeNumber& n){
