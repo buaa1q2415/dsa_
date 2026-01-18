@@ -32,7 +32,7 @@ public:
 
 template <typename T>
 class BiTree{
-private:
+protected:
     tNode<T> *root;
 
     static void clear(tNode<T>* node) { // 遍历删除节点

@@ -96,7 +96,7 @@ void Graph::BFSTraverse(){
 }
 
 void Graph::DFSPath(int v,int w){
-    std::vector<bool> visited(vexnum,false);
+    std::vector<int> visited(vexnum,false);
     std::stack<int> path;//存储路径
     path.emplace(v);
     visited[v]=true;
