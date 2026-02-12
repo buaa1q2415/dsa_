@@ -68,9 +68,9 @@ public:
 
     bool isEmpty() const noexcept{return data.size()==0;}
 
-    void Heapify(int idx){
+    void Heapify(size_t idx){
         while(true){
-            int flag=idx,l=2*idx+1,r=2*idx+2;
+            size_t flag=idx,l=2*idx+1,r=2*idx+2;
             if(l<data.size() && comp(data[l],data[flag])) flag=l;
             if(r<data.size() && comp(data[r],data[flag])) flag=r;
             if(flag!=idx){
